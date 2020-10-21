@@ -23,7 +23,7 @@ app.layout = html.Div(
     style={
        
         "minHeight":"100vh",
-        "backgroundColor":"#111",
+        "backgroundColor":"#11111",
         "color":"white",
         "fontFamily":"Open Sans, sans-serif"
         },
@@ -34,8 +34,14 @@ app.layout = html.Div(
             style={"fontSize":"40px"})],
             ),
             html.Div(
+                style={
+                    "display":"grid",
+                    "gap":50,
+                    "gridTemplateColumns":"repeat(4,1fr)"
+                },
                 children=[
                     html.Div(
+                        style={"grid-dolumn":"span 3"},
                         children=[
                            make_table(countries_df)
                         ]
