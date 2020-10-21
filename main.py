@@ -19,37 +19,58 @@ stylesheets = [
 
 app = dash.Dash(__name__, external_stylesheets=stylesheets)
 
+bubble_map = px.scatter_geo(countries_df,
+size="Confirmed",
+hover_name="Country_Region",
+size_max=40,
+template="plotly_dark",
+hover_data={
+"Confirmed":":,2f",
+"Deaths":":,2f",
+"Recovered":":,2f",
+"Country_Region":False
+}, color="Confirmed", 
+    locations="Country_Region",
+    locationmode="country names")
+
 app.layout = html.Div(
     style={
-       
         "minHeight":"100vh",
-        "backgroundColor":"#11111",
+        "backgroundColor":"#111",
         "color":"white",
         "fontFamily":"Open Sans, sans-serif"
         },
-    children=[
-            html.Header(
-            style={"textAlign":"center","paddingTop":"50px"},
-            children=[html.H1("Corona Dashboard",
-            style={"fontSize":"40px"})],
-            ),
-            html.Div(
-                style={
-                    "display":"grid",
-                    "gap":50,
-                    "gridTemplateColumns":"repeat(4,1fr)"
-                },
-                children=[
-                    html.Div(
-                        style={"grid-dolumn":"span 3"},
-                        children=[
-                           make_table(countries_df)
-                        ]
-                    )
-                ]
-            )
-        ],
-)
+     children=[
+        html.Header(
+            style={"textAlign": "center", "paddingTop": "50px", "marginBottom": 100},
+            children=[html.H1("Corona Dashboard", style={"fontSize": 40})],
+        ),
+        html.Div(
+            style={
+                "display": "grid",
+                "gap": 50,
+                "gridTemplateColumns": "repeat(4, 1fr)",
+            },
+            children=[
+                html.Div(
+                    style={"grid-column": "span 3"},
+                    children=[dcc.Graph(figure=bubble_map)],
+                ),
+                html.Div(children=[make_table(countries_df)]),
+            ],
+        ),
+        html.Div(
+            style={
+                "display": "grid",
+                "gap": 50,
+                "gridTemplateColumns": "repeat(4, 1fr)",
+            },
+            children=[
+                    ],
+                ),
+            ],
+        )
+
 
 
 if __name__ == '__main__':
