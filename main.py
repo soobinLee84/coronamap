@@ -108,6 +108,16 @@ app.layout = html.Div(
     ],
 )
 
+"""
+callback은 데이터를 가져올 수 있도록 해준다.
+interactive한 core component에서 사실
+어떤 값이든 가져올 수 있고, output도 가진다.
+"""
+"""
+callback의 작동원리는 먼저 output부터 적으면
+함수의 return값이 어디에 적용되는지 적어준다.
+output의 두번 째 인자는 어느 부분의 class가 바뀔지를 적어주는것이다.
+"""
 
 @app.callback(
     Output("hello-output","children"),
@@ -115,6 +125,7 @@ app.layout = html.Div(
        Input("hello-Input","value") 
     ]
 )
+
 
 def update_hello(value):
     if value is None:
