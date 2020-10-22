@@ -6,6 +6,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
 from data import countries_df, totals_df
@@ -83,7 +84,7 @@ app.layout = html.Div(
             },
             children=[
                 html.Div(
-                    style={"grid-column":"span 3"},
+                    style={"grid-column":"span 4"},
                     children=[dcc.Graph(figure=bubble_map)]),
                 html.Div(children=[make_table(countries_df)]),
             ],
@@ -93,17 +94,33 @@ app.layout = html.Div(
                     style={
                         "display":"grid",
                         "gap":50,
-                        "gridTemplateColumns":"repeat(4, 1fr)"
+                        "gridTemplateColumns":"repeat(5, 1fr)"
                     },
-                    children=[dcc.Graph(figure=bars_graph)]),
-      
+                    children=[dcc.Graph(figure=bars_graph)]), 
+                    html.Div(
+                        children=[
+                            dcc.Input(placeholder="What is your name?", id="hello-Input"),
+                            html.H2(children= "Hello anonymous", id="hello-output"),
+                        ]
+                    )
             ],
-        ),
- 
-            ],
-        )
+        ), 
+    ],
+)
 
 
+@app.callback(
+    Output("hello-output","children"),
+    [
+       Input("hello-Input","value") 
+    ]
+)
+
+def update_hello(value):
+    if value is None:
+        return "Hello Anonymous"
+    else:
+        return f"Hello {value}!"
 
 if __name__ == '__main__':
     app.run_server(debug=True)
