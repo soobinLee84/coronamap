@@ -24,6 +24,7 @@ size="Confirmed",
 hover_name="Country_Region",
 size_max=40,
 template="plotly_dark",
+projection="natural earth",
 hover_data={
 "Confirmed":":,2f",
 "Deaths":":,2f",
