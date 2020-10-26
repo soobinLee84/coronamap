@@ -1,137 +1,141 @@
-# -*- coding: utf-8 -*-
-
-# Run this app with `python app.py` and
-# visit http://127.0.0.1:8050/ in your web browser.
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly.express as px
-import pandas as pd
-from data import countries_df, totals_df
+from data import (
+    countries_df,
+    totals_df,
+    dropdown_options,
+    make_global_df,
+    make_country_df
+)
 from builders import make_table
-
 
 stylesheets = [
     "https://cdn.jsdelivr.net/npm/reset-css@5.0.1/reset.min.css",
-    "https://fonts.googleapis.com/css2?family=Open+Sans&display=swap"
+    "https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap",
 ]
 
 app = dash.Dash(__name__, external_stylesheets=stylesheets)
 
-bubble_map = px.scatter_geo(countries_df,
-size="Confirmed",
-hover_name="Country_Region",
-size_max=40,
-title="Confirmed By Country",
-template="plotly_dark",
-color_continuous_scale = px.colors.sequential.Oryel,
+app.title = "Sexy Dashboard"
 
-hover_data={
-"Confirmed":":,2f",
-"Deaths":":,2f",
-"Recovered":":,2f",
-"Country_Region":False
-}, color="Confirmed", 
+server = app.server
+
+bubble_map = px.scatter_geo(
+    countries_df,
+    size="Confirmed",
+    projection="equirectangular",
+    hover_name="Country_Region",
+    color="Confirmed",
     locations="Country_Region",
-    locationmode="country names")
+    locationmode="country names",
+    size_max=40,
+    title="Confirmed By Country",
+    template="plotly_dark",
+    color_continuous_scale=px.colors.sequential.Oryel,
+    hover_data={
+        "Confirmed": ":,",
+        "Deaths": ":,",
+        "Recovered": ":,",
+        "Country_Region": False,
+    },
+)
+bubble_map.update_layout(
+    margin=dict(l=0, r=0, t=50, b=0), coloraxis_colorbar=dict(xanchor="left", x=0)
+)
 
-#bubble_map changing layout
-bubble_map.update_layout(margin=dict(l=0,r=0,t=50,b=0)) 
-
-# barGraph
-bars_graph = px.bar(totals_df, x="condition", y="count",
-hover_data={
-    'count':":,"
-},
- template="plotly_dark", 
- title="Total Global Cases",
- labels={
-     "conditon":"Condition",
-     "count":"Count",
-     "color": "Condition"
-    }
- )
-
-#bar의 제목 설정 x좌표, y좌표 각각 설정
-#bars_graph.update_layout(
-#    xaxis=dict(title="Condition"),
-#    yaxis=dict(title="Count")
-#) -> labels 설정을 통해 똑같은 세팅을 할 수 있다.
- 
-#bar color 지정
-bars_graph.update_traces(marker_color=["#ff4d4d","#7d5fff","#32ff7e"])
-
+bars_graph = px.bar(
+    totals_df,
+    x="condition",
+    hover_data={"count": ":,"},
+    y="count",
+    template="plotly_dark",
+    title="Total Global Cases",
+    labels={"condition": "Condition", "count": "Count", "color": "Condition"},
+)
+bars_graph.update_traces(marker_color=["#e74c3c", "#8e44ad", "#27ae60"])
 
 app.layout = html.Div(
     style={
-        "minHeight":"100vh",
-        "backgroundColor":"#111",
-        "color":"white",
-        "fontFamily":"Open Sans, sans-serif"
-        },
-     children=[
+        "minHeight": "100vh",
+        "backgroundColor": "#111111",
+        "color": "white",
+        "fontFamily": "Open Sans, sans-serif",
+    },
+    children=[
         html.Header(
             style={"textAlign": "center", "paddingTop": "50px", "marginBottom": 100},
             children=[html.H1("Corona Dashboard", style={"fontSize": 40})],
         ),
         html.Div(
             style={
-                "display":"grid",
-                "gap":50,
-                "gridTemplateColumns":"repeat(4, 1fr)"
+                "display": "grid",
+                "gap": 50,
+                "gridTemplateColumns": "repeat(4, 1fr)",
             },
             children=[
                 html.Div(
-                    style={"grid-column":"span 4"},
-                    children=[dcc.Graph(figure=bubble_map)]),
+                    style={"grid-column": "span 3"},
+                    children=[dcc.Graph(figure=bubble_map)],
+                ),
                 html.Div(children=[make_table(countries_df)]),
             ],
-        ), html.Div(
+        ),
+        html.Div(
+            style={
+                "display": "grid",
+                "gap": 50,
+                "gridTemplateColumns": "repeat(4, 1fr)",
+            },
             children=[
+                html.Div(children=[dcc.Graph(figure=bars_graph)]),
                 html.Div(
-                    style={
-                        "display":"grid",
-                        "gap":50,
-                        "gridTemplateColumns":"repeat(5, 1fr)"
-                    },
-                    children=[dcc.Graph(figure=bars_graph)]), 
-                    html.Div(
-                        children=[
-                            dcc.Input(placeholder="What is your name?", id="hello-Input"),
-                            html.H2(children= "Hello anonymous", id="hello-output"),
-                        ]
-                    )
+                    style={"grid-column": "span 3"},
+                    children=[
+                        dcc.Dropdown(
+                            style={
+                                "width": 320,
+                                "margin": "0 auto",
+                                "color": "#111111",
+                            },
+                            placeholder="Select a Country",
+                            id="country",
+                            options=[
+                                {"label": country, "value": country}
+                                for country in dropdown_options
+                            ],
+                        ),
+                        dcc.Graph(id="country_graph"),
+                    ],
+                ),
             ],
-        ), 
+        ),
     ],
 )
 
-"""
-callback은 데이터를 가져올 수 있도록 해준다.
-interactive한 core component에서 사실
-어떤 값이든 가져올 수 있고, output도 가진다.
-"""
-"""
-callback의 작동원리는 먼저 output부터 적으면
-함수의 return값이 어디에 적용되는지 적어준다.
-output의 두번 째 인자는 어느 부분의 class가 바뀔지를 적어주는것이다.
-"""
 
-@app.callback(
-    Output("hello-output","children"),
-    [
-       Input("hello-Input","value") 
-    ]
-)
-
-
+@app.callback(Output("country_graph", "figure"), [Input("country", "value")])
 def update_hello(value):
-    if value is None:
-        return "Hello Anonymous"
+    if value:
+        df = make_country_df(value)
     else:
-        return f"Hello {value}!"
+        df = make_global_df()
+    fig = px.line(
+        df,
+        x="date",
+        y=["confirmed", "deaths", "recovered"],
+        template="plotly_dark",
+        labels={"value":"Cases", "variable": "Condition", "date": "Date"},
+        hover_data={"value": ":,", "variable": False, "date": False},
+    )
+    fig.update_xaxes(rangeslider_visible=True)
+    fig["data"][0]["line"]["color"] ="#e74c3c"
+    fig["data"][1]["line"]["color"] ="#8e44ad"
+    fig["data"][2]["line"]["color"] ="#27ae60"
+    return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
