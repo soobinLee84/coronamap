@@ -22,7 +22,7 @@ app = dash.Dash(__name__, external_stylesheets=stylesheets)
 #heroku server deplyment
 server = app.server
 
-app.title = "Sexy Dashboard"
+app.title = "Covid Dashboard By soobinLee"
 
 server = app.server
 
